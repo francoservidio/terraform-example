@@ -18,8 +18,11 @@ resource "aws_instance" "example" {
 
   user_data = <<-EOF
               #!/bin/bash
-              echo "Hello, World" > index.html
-              nohup busybox httpd -f -p 8080 &
+              sudo yum install -y httpd
+              sudo systemctl start httpd
+              systemctl start httpd.service
+              systemctl enable httpd.service
+              echo “Hello World from $(hostname -f)” > /var/www/html/index.html
               EOF
   tags = {
     Name = "terraform example"
@@ -30,12 +33,26 @@ resource "aws_security_group" "instance" {
   name = "terraform example-instance"
 
   ingress {
-    from_port = 8080
+    from_port = 80
     protocol  = "tcp"
-    to_port   = 8080
+    to_port   = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port = 22
+    protocol  = "tcp"
+    to_port   = 22
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port = 0
+    protocol  = "-1"
+    to_port   = 0
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+
 
 
 
